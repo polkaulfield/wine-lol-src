@@ -6989,13 +6989,10 @@ static void test_vertex_shader_constant(void)
     ok(consts_swvp == 8192, "Unexpected consts_swvp %lu.\n", consts_swvp);
 
     hr = IDirect3DDevice9_SetVertexShaderConstantF(device, consts + 0, c, 1);
-    todo_wine
     ok(hr == D3D_OK, "Got unexpected hr %#lx.\n", hr);
     hr = IDirect3DDevice9_SetVertexShaderConstantF(device, consts + 1, c, 1);
-    todo_wine
     ok(hr == D3D_OK, "Got unexpected hr %#lx.\n", hr);
     hr = IDirect3DDevice9_SetVertexShaderConstantF(device, consts - 1, d, 4);
-    todo_wine
     ok(hr == D3D_OK, "Got unexpected hr %#lx.\n", hr);
     hr = IDirect3DDevice9_SetVertexShaderConstantF(device, consts_swvp - 1, c, 1);
     ok(hr == D3D_OK, "Got unexpected hr %#lx.\n", hr);
@@ -7020,7 +7017,6 @@ static void test_vertex_shader_constant(void)
 
     IDirect3DDevice9_SetSoftwareVertexProcessing(device, 0);
     hr = IDirect3DDevice9_SetVertexShaderConstantF(device, consts + 0, c, 1);
-    todo_wine
     ok(hr == D3D_OK, "Got unexpected hr %#lx.\n", hr);
     hr = IDirect3DDevice9_SetVertexShaderConstantF(device, consts_swvp - 1, c, 1);
     ok(hr == D3D_OK, "Got unexpected hr %#lx.\n", hr);
@@ -7028,7 +7024,6 @@ static void test_vertex_shader_constant(void)
     IDirect3DDevice9_SetSoftwareVertexProcessing(device, 1);
 
     hr = IDirect3DDevice9_SetVertexShaderConstantF(device, consts + 0, c, 1);
-    todo_wine
     ok(hr == D3D_OK, "Got unexpected hr %#lx.\n", hr);
     hr = IDirect3DDevice9_SetVertexShaderConstantF(device, consts_swvp - 1, c, 1);
     ok(hr == D3D_OK, "Got unexpected hr %#lx.\n", hr);
