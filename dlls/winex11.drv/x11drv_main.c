@@ -77,6 +77,7 @@ BOOL show_systray = TRUE;
 BOOL grab_pointer = TRUE;
 BOOL grab_fullscreen = FALSE;
 int keyboard_layout = -1;
+BOOL keyboard_scancode_detect = TRUE;
 BOOL managed_mode = TRUE;
 BOOL decorated_mode = TRUE;
 BOOL private_color_map = FALSE;
@@ -585,6 +586,9 @@ static void setup_options(void)
     p = x11drv_get_keyboard_layout_list( &len );
     if (p) set_reg_string_value( hkey, "KeyboardLayoutList", p, len * sizeof(WCHAR) );
     free( p );
+
+    if (!get_config_key( hkey, appkey, "KeyboardScancodeDetect", buffer, sizeof(buffer) ))
+        keyboard_scancode_detect = IS_OPTION_TRUE( buffer[0] );
 
     if (!get_config_key( hkey, appkey, "ScreenDepth", buffer, sizeof(buffer) ))
         default_visual.depth = wcstol( buffer, NULL, 0 );
