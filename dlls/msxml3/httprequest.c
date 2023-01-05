@@ -117,6 +117,7 @@ typedef struct
     DWORD enterrprised_id;
     DWORD max_connections;
 
+    ULONGLONG request_body_size;
 } httprequest;
 
 typedef struct
@@ -737,27 +738,40 @@ static HRESULT BindStatusCallback_create(httprequest* This, BindStatusCallback *
         {
         case VT_BSTR:
         {
-            int len = SysStringLen(V_BSTR(body));
-            const WCHAR *str = V_BSTR(body);
-            UINT i, cp = CP_ACP;
+            int len = This->request_body_size ? This->request_body_size : SysStringLen(V_BSTR(body));
 
-            for (i = 0; i < len; i++)
+            if(!This->request_body_size)
             {
-                if (str[i] > 127)
+                const WCHAR *str = V_BSTR(body);
+                UINT i, cp = CP_ACP;
+
+                for (i = 0; i < len; i++)
                 {
-                    cp = CP_UTF8;
-                    break;
+                    if (str[i] > 127)
+                    {
+                        cp = CP_UTF8;
+                        break;
+                    }
                 }
+                size = WideCharToMultiByte(cp, 0, str, len, NULL, 0, NULL, NULL);
+                if (!(ptr = heap_alloc(size)))
+                {
+                    heap_free(bsc);
+                    return E_OUTOFMEMORY;
+                }
+                WideCharToMultiByte(cp, 0, str, len, ptr, size, NULL, NULL);
+                if (cp == CP_UTF8) This->use_utf8_content = TRUE;
             }
-
-            size = WideCharToMultiByte(cp, 0, str, len, NULL, 0, NULL, NULL);
-            if (!(ptr = heap_alloc(size)))
+            else
             {
-                heap_free(bsc);
-                return E_OUTOFMEMORY;
+                size = This->request_body_size;
+                if (!(ptr = heap_alloc(size)))
+                {
+                    heap_free(bsc);
+                    return E_OUTOFMEMORY;
+                }
+                memcpy(ptr, V_BSTR(body), size);
             }
-            WideCharToMultiByte(cp, 0, str, len, ptr, size, NULL, NULL);
-            if (cp == CP_UTF8) This->use_utf8_content = TRUE;
             break;
         }
         case VT_ARRAY|VT_UI1:
@@ -2436,6 +2450,8 @@ static HRESULT WINAPI xml_http_request_2_IRtwqAsyncCallback_Invoke(IRtwqAsyncCal
 
         ISequentialStream_Release(This->request_body);
         This->request_body = NULL;
+
+        This->req.request_body_size = This->request_body_size;
     }
 
     hr = httprequest_send(&This->req, body_v);
