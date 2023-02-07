@@ -107,7 +107,7 @@ static void dbg_outputA(const char* buffer, int len)
             if (len > 0) i = line_pos;  /* buffer is full, flush anyway */
             else break;
         }
-        WriteFile(dbg_houtput, line_buff, i, &w, NULL);
+        wine_dbg_printf("%.*s", i, line_buff);
         memmove( line_buff, line_buff + i, line_pos - i );
         line_pos -= i;
     }
