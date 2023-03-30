@@ -1479,7 +1479,7 @@ static BOOL is_hidden_file( const UNICODE_STRING *name )
     end = p = name->Buffer + name->Length/sizeof(WCHAR);
     while (p > name->Buffer && p[-1] == '\\') p--;
     while (p > name->Buffer && p[-1] != '\\') p--;
-    return (p < end && *p == '.');
+    return (p < end && p + 1 != end && p[0] == '.' && p[1] != '\\' && (p[1] != '.' || (p + 2 != end && p[2] != '\\')));
 }
 
 
@@ -2441,6 +2441,7 @@ static NTSTATUS get_dir_data_entry( struct dir_data *dir_data, void *info_ptr, I
     union file_directory_info *info;
     struct stat st;
     ULONG name_len, start, dir_size, attributes;
+    UNICODE_STRING name;
 
     if (get_file_info( names->unix_name, &st, &attributes ) == -1)
     {
@@ -2470,8 +2471,8 @@ static NTSTATUS get_dir_data_entry( struct dir_data *dir_data, void *info_ptr, I
     {
         if (st.st_dev != dir_data->id.dev) st.st_ino = 0;  /* ignore inode if on a different device */
 
-        if (!show_dot_files && names->long_name[0] == '.' && names->long_name[1] &&
-            (names->long_name[1] != '.' || names->long_name[2]))
+        RtlInitUnicodeString( &name, names->long_name );
+        if (is_hidden_file( &name ))
             attributes |= FILE_ATTRIBUTE_HIDDEN;
 
         fill_file_info( &st, attributes, info, class );
